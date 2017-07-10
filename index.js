@@ -2,14 +2,23 @@ const express = require('express')
 const app = express()
 var bodyParser = require('body-parser');
 
-app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+//app.use(bodyParser.json()); // for parsing application/json
+//app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-
+function rawBody(req, res, next) {
+  req.setEncoding('utf8');
+  req.rawBody = '';
+  req.on('data', function(chunk) {
+    req.rawBody += chunk;
+  });
+  req.on('end', function(){
+    next();
+  });
+}
+app.use(rawBody);
 app.post('/post/data', function(req, res) {
-    console.log('receiving data...');
-    console.log('body is ',req.body);
-    res.send(req.body);
+    eval("var value=String" + req.rawBody.slice(4));
+    res.send(value);
 });
 
 app.listen(process.env.PORT || 3000, function(){
